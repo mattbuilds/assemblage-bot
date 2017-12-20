@@ -2,11 +2,22 @@ import requests
 from bs4 import BeautifulSoup
 
 def get_libor_page():
+	""" Grabs Libor Rates from a website and returns it as text """
 	url = 'http://www.wsj.com/mdc/public/page/2_3020-libor.html?mod=mdc_bnd_pglnk'
 	r = requests.get(url)
 	return r.text
 
 def parse_libor_page(html):
+	""" Parses the HTML of libor rates 
+	Arguments:
+		html: the text of the libor rates as a string
+
+	Return:
+		a list of the different titles from the HTML
+		a list of rows scraped from the HTML string, these contain the rates 
+			for different intervals (ex weekly, daily)
+	"""
+
 	soup = BeautifulSoup(html)
 	
 	table = soup.find("table", {"class":"mdcTable"})
