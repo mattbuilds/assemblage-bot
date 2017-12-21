@@ -1,8 +1,8 @@
 import random
+from . import app
 from flask import Flask, jsonify
 from .helpers import get_libor_page, parse_libor_page
 from .services import SlackParser, LiborOutput, SlackOutput
-app = Flask(__name__)
 
 @app.route('/random', methods=['GET', 'POST'])
 def get_random():
