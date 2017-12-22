@@ -1,5 +1,6 @@
 class SlackParser():
-	def __init__(self, text):
+	def __init__(self, request):
+		text = request.form['text']
 		self.choices = self.__split_text(text)
 
 	def __split_text(self, text):

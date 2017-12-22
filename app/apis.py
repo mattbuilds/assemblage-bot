@@ -1,15 +1,12 @@
 import random
 from . import app
-from flask import Flask, jsonify
+from flask import request, Flask, jsonify
 from .helpers import get_libor_page, parse_libor_page
 from .services import SlackParser, LiborOutput, SlackOutput
 
 @app.route('/random', methods=['GET', 'POST'])
 def get_random():
-	#parse input
-	input = "thai, chinese, pizza, mexican"
-
-	choices = SlackParser(input).get()
+	choices = SlackParser(request.form).get()
 	selected = random.choice(choices)
 
 	output = SlackOutput(text=selected)
