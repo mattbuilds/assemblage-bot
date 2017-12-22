@@ -1,14 +1,22 @@
+from ..errors import TokenError
+
 class SlackParser():
 	def __init__(self, input):
-		text = input['text']
-		self.choices = self.__split_text(text)
+		self.__authenticate(input)
+		self.text = self.__split_text(input['text'])
+
+	def __authenticate(self, input):
+		if 'token' not in input:
+			raise TokenError("Invalid Token")
+		if input['token'] != 'IcFfMuvc0GyvsnnDHILulqcd':
+			raise TokenError("Invalid Token")
 
 	def __split_text(self, text):
 		text = text.replace(', ', ' ')
 		return text.split()
 
 	def get(self):
-		return self.choices
+		return self.text
 
 class SlackOutput():
 	def __init__(self, text=None, response_type=None):
@@ -18,6 +26,16 @@ class SlackOutput():
 		if response_type is not None:
 			self.response['response_type'] = response_type
 		self.response.setdefault('response_type', 'in_channel')
+
+	def set_attachments(self):
+		self.response['attachments'] = []
+
+	def add_attachment(self, title, text):
+		attachment = {
+			'title': title,
+			'text': text
+		}
+		self.response['attachments'].append(attachment)
 
 	def update_text(self, text):
 		self.response['text'] = text

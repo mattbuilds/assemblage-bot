@@ -4,6 +4,15 @@ from flask import request, Flask, jsonify
 from .helpers import get_libor_page, parse_libor_page
 from .services import SlackParser, LiborOutput, SlackOutput
 
+@app.route('/lunch', methods=['GET', 'POST'])
+def create_lunch_poll():
+	SlackParser(request.form)
+	output = SlackOutput("Testing")
+	output.set_attachments()
+	for key, value in request.form.items():
+		output.add_attachment(key, value)
+	return jsonify(output.response)
+
 @app.route('/random', methods=['GET', 'POST'])
 def get_random():
 	choices = SlackParser(request.form).get()
