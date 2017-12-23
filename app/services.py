@@ -1,8 +1,9 @@
-from ..errors import TokenError
+from .errors import TokenError
 
 class SlackParser():
 	def __init__(self, input):
 		self.__authenticate(input)
+		self.user_id = input['user_id']
 		self.text = self.__split_text(input['text'])
 
 	def __authenticate(self, input):

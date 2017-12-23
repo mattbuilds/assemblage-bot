@@ -1,8 +1,18 @@
 import random
-from . import app
 from flask import request, Flask, jsonify
+from . import app, db
 from .helpers import get_libor_page, parse_libor_page
 from .services import SlackParser, LiborOutput, SlackOutput
+from .lunch import LunchParser
+
+@app.route('/test', methods=['GET', 'POST'])
+def testing():
+	LunchParser(request.form)
+	return ("Hi")
+
+def create_lunch_vote():
+	parser = LunchParser(request.form)
+	parser.create_vote()
 
 @app.route('/lunch', methods=['GET', 'POST'])
 def create_lunch_poll():
