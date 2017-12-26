@@ -1,4 +1,4 @@
-from ..services import SlackParser
+from ..services import SlackParser, SlackOutput
 from .models import SlackUser, LunchVote, LunchVoteOptions
 from .. import db
 
@@ -19,6 +19,7 @@ class LunchParser(SlackParser):
 		self.__add_vote_to_db()
 		#Send Form to Users
 
+
 	def __add_vote_to_db(self):
 		lunch_vote = LunchVote()
 		db.session.add(lunch_vote)
@@ -28,6 +29,31 @@ class LunchParser(SlackParser):
 		db.session.commit()
 
 
-class Lunch():
-	def __init__(self):
-		pass
+class LunchOutput(SlackOutput):
+	def __init__(self, text=None, responder_type=None):
+		SlackOutput.__init__(self, text, responder_type)
+		self.set_attachments()
+		self.actions = []
+
+	def create_button_message(self, choices):
+		for choice in choices:
+			self.add_button(choice)
+		attachment = {
+			"text" : "Choose a lunch to order",
+			"fallback": "Something went wrong, you can't pick lunch",
+			"callback_id":"lunch_order",
+			"attachment_type":"default",
+			"actions":self.actions
+		}
+		self.response['attachments'].append(attachment)
+
+	def add_button(self, button):
+		action = {
+			'name':'lunch',
+			'text': button,
+			'type': "button",
+			'value': button
+		}
+		self.actions.append(action)
+
+

@@ -1,4 +1,7 @@
+from . import app
 from .errors import TokenError
+import requests
+import json
 
 class SlackParser():
 	def __init__(self, input):
@@ -9,7 +12,7 @@ class SlackParser():
 	def __authenticate(self, input):
 		if 'token' not in input:
 			raise TokenError("Invalid Token")
-		if input['token'] != 'IcFfMuvc0GyvsnnDHILulqcd':
+		if input['token'] != app.config['SLACK_TOKEN']:
 			raise TokenError("Invalid Token")
 
 	def __split_text(self, text):
@@ -28,6 +31,9 @@ class SlackOutput():
 			self.response['response_type'] = response_type
 		self.response.setdefault('response_type', 'in_channel')
 
+	def set_channel(self, channel):
+		self.response['channel'] = channel
+
 	def set_attachments(self):
 		self.response['attachments'] = []
 
@@ -36,6 +42,7 @@ class SlackOutput():
 			'title': title,
 			'text': text
 		}
+
 		self.response['attachments'].append(attachment)
 
 	def update_text(self, text):
@@ -43,6 +50,19 @@ class SlackOutput():
 
 	def update_response_type(self, response_type):
 		self.response['response_type'] = response_type
+
+	def send_request(self):
+		headers = {
+			'Content-type':'application/json',
+			'Authorization': 'Bearer ' + app.config['SLACK_BEARER']
+		}
+
+		r = requests.post(
+			'https://slack.com/api/chat.postMessage',
+			data = json.dumps(self.response),
+			headers=headers
+		)
+		return json.loads(r.text)
 
 class LiborOutput():
 	""" Prepares and formats the JSON output to be consumed by the Slack API
