@@ -18,8 +18,10 @@ def testing():
 
 @app.route('/message', methods=['POST'])
 def handle_interactive_message():
-	text = json.dumps(request.form)
-	output = SlackOutput(text)
+	payload = json.loads(request.form['payload'])
+	sp = LunchParser(payload)
+	output = LunchOutput("Lunch Order")
+	output.create_response_message(sp.choice)
 	return jsonify(output.response)
 
 @app.route('/poll', methods=['POST'])

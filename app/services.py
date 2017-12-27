@@ -6,8 +6,15 @@ import json
 class SlackParser():
 	def __init__(self, input):
 		self.__authenticate(input)
-		self.user_id = input['user_id']
-		self.text = self.__split_text(input['text'])
+		self.user_id = self.__parse_user_id(input)
+		if 'text' in input:
+			self.text = self.__split_text(input['text'])
+
+	def __parse_user_id(self, input):
+		if 'user_id' in input:
+			return input['user_id']
+		if 'user' in input:
+			return input['user']['id']
 
 	def __authenticate(self, input):
 		if 'token' not in input:
