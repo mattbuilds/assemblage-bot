@@ -31,7 +31,6 @@ def create_lunch_poll():
 	output.set_channel("#bottest")
 	output.create_button_message(choices)
 	response = output.send_request()
-	return jsonify(response)
 
 @app.route('/random', methods=['GET', 'POST'])
 def get_random():
