@@ -7,8 +7,16 @@ class SlackParser():
 	def __init__(self, input):
 		self.__authenticate(input)
 		self.user_id = self.__parse_user_id(input)
+		self.channel_id = self.__parse_channel_id(input)
+		self.input = input
 		if 'text' in input:
 			self.text = self.__split_text(input['text'])
+
+	def __parse_channel_id(self, input):
+		if 'channel_id' in input:
+			return input['channel_id']
+		if 'channel' in input:
+			return input['channel']['id']
 
 	def __parse_user_id(self, input):
 		if 'user_id' in input:
@@ -28,6 +36,57 @@ class SlackParser():
 
 	def get(self):
 		return self.text
+
+class SlackApi():
+	def __init__(self):
+		self.headers = {
+			'Authorization': 'Bearer ' + app.config['SLACK_BEARER']
+		}
+
+	def __call(self, headers, method, data):
+		url = 'https://slack.com/api/'+method
+		r = requests.post(
+			url=url,
+			data=data,
+			headers=headers
+		)
+		return r
+
+	def __json_call(self, method, data):
+		headers = self.headers
+		headers['Content-type'] = 'application/json'
+		data = json.dumps(data)
+		return self.__call(headers, method, data)
+
+	def __form_call(self, method, data):
+		return self.__call(self.headers, method, data)
+
+	def get_group_info(self, data):
+		return self.__form_call('channels.info', data)
+
+	def get_channel_users(self, channel):
+		data = {
+			'token' : app.config['SLACK_BEARER'],
+			'channel' : channel
+		}
+
+		group = self.__form_call('groups.info', data)
+		group_dict = group.json()
+		if not group_dict['ok']:
+			channel = self.__form_call('channels.info', data)
+			channel_dict = channel.json()
+			return channel_dict['channel']['members']
+		else:
+			return group_dict['group']['members']
+
+	def send_message(self, data):
+		return self.__json_call('chat.postEphemeral', data)
+
+	def update_message(self, data):
+		return self.__json_call('chat.update', data)
+
+	def send_group_message(self, data):
+		return self.__json_call('chat.postMessage', data)
 
 class SlackOutput():
 	def __init__(self, text=None, response_type=None):
@@ -49,7 +108,6 @@ class SlackOutput():
 			'title': title,
 			'text': text
 		}
-
 		self.response['attachments'].append(attachment)
 
 	def update_text(self, text):
@@ -70,60 +128,3 @@ class SlackOutput():
 			headers=headers
 		)
 		return json.loads(r.text)
-
-class LiborOutput():
-	""" Prepares and formats the JSON output to be consumed by the Slack API
-
-	Attributes:
-		colors: that will be displayed in the Slack UI
-		row_titles: list of row titles to look for to be outputed
-	"""
-	def __init__(self):
-		self.colors = ['439FE0','ff5050']
-		self.row_titles = ['Libor 1 Month', 'Libor 1 Year']
-
-	def generate(self, titles, rows):
-		""" Generates an output dictionary of libor rates
-		Arguments:
-			titles: a list of titles parsed from the HTML libor lookup
-			rows: a list of rows parsed from the HTML libor lookup"""
-		self.__set_initial_response(titles)
-		for lrow in rows:
-			if lrow[0] in self.row_titles:
-					attch_row = {
-						'title' : lrow[0],
-						'fields' : [],
-						'color' : self.colors.pop()
-					}
-					for key in range(1,5):
-						attch_row['fields'].append(self.__get_field(titles, lrow, key))
-					
-					self.response['attachments'].append(attch_row)
-		return self.response
-
-	def __get_field(self, titles, row, key):
-		""" Creates a field dict 
-		Arguments:
-			titles: a list of titles parsed from the libor lookup
-			row: the current row being parsed from the HTML libor lookup
-			key: the column in the row to lookup
-		"""
-		if key in [3, 4]:
-			addition = "52 Week "
-		else:
-			addition = ""
-
-		field = {
-			"title": addition + titles[key],
-			"value": row[key],
-			"short": True
-		}
-		return field
-
-	def __set_initial_response(self, titles):
-		""" Returns a dictionary of the output formatted for Slacks API """
-		self.response = {
-			'response_type':'in_channel', 
-			'attachments' : [],
-			'text' : titles[0]
-		}
