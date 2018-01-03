@@ -16,7 +16,7 @@ def handle_interactive_message():
 
 	#Update results
 	poll_results = sp.get_poll_results(vote.poll_id)
-	results = PollOutput("Lunch Order Results")
+	results = PollOutput("Results")
 	results.create_result_attachments(poll_results)
 	results.response['ts'] = sp.get_results_message_ts(vote.poll_id)
 	sp.update_message(results.response)
@@ -28,14 +28,14 @@ def create_poll():
 	parser = PollParser(request.form)
 
 	#Create poll and send request
-	output = PollOutput("Lunch Order")
+	output = PollOutput(parser.get_title())
 	poll = parser.add_vote_to_db()
 	output.create_button_message(parser.get(), poll.id)
 	parser.create_vote(output.response, poll.id)
 
 	#Poll Results Message
 	poll_results = parser.get_poll_results(poll.id)
-	results = PollOutput("Lunch Order Results")
+	results = PollOutput("Results")
 	results.create_result_attachments(poll_results)
 	response = parser.send_results(results.response)
 	parser.log_results_message_ts(poll.id, response['ts'])

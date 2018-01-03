@@ -86,11 +86,17 @@ class PollParser(SlackParser):
 	def add_vote_to_db(self):
 		poll = Poll()
 		db.session.add(poll)
-		for option in self.text:
+		for option in self.text[1:]:
 			poll_option = PollOption(poll=poll, name=option)
 			db.session.add(poll_option)
 		db.session.commit()
 		return poll
+
+	def get_title(self):
+		return self.text[0]
+
+	def get(self):
+		return self.text[1:]
 
 class PollOutput(SlackOutput):
 	def __init__(self, text=None, responder_type=None):
@@ -113,7 +119,7 @@ class PollOutput(SlackOutput):
 		for choice in choices:
 			self.add_button(choice)
 		attachment = {
-			"title" : "Choose a lunch to order",
+			"title" : "Select an item from below",
 			"fallback": "Something went wrong, you can't pick lunch",
 			"callback_id": callback_id,
 			"attachment_type":"default",

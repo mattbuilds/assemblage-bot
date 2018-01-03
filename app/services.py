@@ -10,7 +10,7 @@ class SlackParser():
 		self.channel_id = self.__parse_channel_id(input)
 		self.input = input
 		if 'text' in input:
-			self.text = self.__split_text(input['text'])
+			self.text = input['text'].split(", ")
 
 	def __parse_channel_id(self, input):
 		if 'channel_id' in input:
@@ -31,8 +31,8 @@ class SlackParser():
 			raise TokenError("Invalid Token")
 
 	def __split_text(self, text):
-		text = text.replace(', ', ' ')
-		return text.split()
+		#text = text.replace(', ', ' ')
+		return text.split(", ")
 
 	def get(self):
 		return self.text
