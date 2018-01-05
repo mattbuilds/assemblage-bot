@@ -23,9 +23,8 @@ def handle_interactive_message():
     vote = parser.tally_vote()
 
     #Update results
-    poll_results = parser.get_poll_results(vote.poll_id)
     results = PollOutput("Results")
-    results.create_result_attachments(poll_results)
+    results.create_result_attachments(vote.poll_id)
     results.response['ts'] = parser.get_results_message_ts(vote.poll_id)
     parser.update_message(results.response)
     return "Thanks for voting."
@@ -47,9 +46,8 @@ def create_poll():
     parser.create_vote(output.response, poll.id)
 
     #Poll Results Message
-    poll_results = parser.get_poll_results(poll.id)
     results = PollOutput("Results")
-    results.create_result_attachments(poll_results)
+    results.create_result_attachments(poll.id)
     response = parser.send_results(results.response)
     parser.log_results_message_ts(poll.id, response['ts'])
 

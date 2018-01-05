@@ -64,11 +64,6 @@ class PollParser(SlackParser):
         db.session.commit()
         return vote
 
-    def get_poll_results(self, poll_id):
-        """Return the results of a poll"""
-        poll_options = PollOption.query.filter_by(poll_id=poll_id).all()
-        return poll_options
-
     def get_poll_users(self, poll_id):
         """Return all the votes for a poll"""
         users = PollVote.query.filter_by(poll_id=poll_id).all()
@@ -118,8 +113,10 @@ class PollOutput(SlackOutput):
         self.set_attachments()
         self.actions = []
 
-    def create_result_attachments(self, poll_results):
+    def create_result_attachments(self, poll_id):
         """Create a result attachment for a poll choice"""
+        poll_results = PollOption.query.filter_by(poll_id=poll_id).all()
+
         for option in poll_results:
             attachment = {
                 "title" : option.name,
