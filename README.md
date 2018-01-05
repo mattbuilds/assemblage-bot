@@ -1,4 +1,4 @@
-# MattBot
+# Assemblage Bot
 This is the backend for my slack bot. Right now it has two tools, random selector and a poll. 
 
 ## Using the Random Selector
